@@ -50,111 +50,33 @@ public class DoctorController {
 	@Autowired
 	AppointmentDao service_appointment;
 	
-
-	
-	@RequestMapping(value="/doctor", method=RequestMethod.GET)
-	public ModelAndView doctor(){
-		ModelAndView mv=new ModelAndView();
-		mv.setViewName("doctor");
-		
-		return mv;
-	}
-	
 	@RequestMapping(value="/doctor-login", method=RequestMethod.POST)
 	@CrossOrigin(origins="http://localhost:3000")
 	public String login(HttpServletRequest request){
 		Doctor o=service.getByLicense(request.getParameter("license"));
-		o.setPassword(request.getParameter("pwd"));
 		if(o!=null){
+			o.setPassword(request.getParameter("pwd"));
 			Doctor oo=service.login(o);
 			if(oo!=null){
 				return oo.getId().toString();
 			}
 		}
-		return "0";	
+			return "0";
 	}
 	
-	@RequestMapping(value="/doctor-search-form", method=RequestMethod.GET)
-	public ModelAndView search_form(){
-		ModelAndView mv=new ModelAndView();
-		
-		List<Speciality> speciality=service_speciality.search(new Speciality());
-		
-		mv.addObject("o", new Doctor());
-		mv.addObject("speciality", speciality);
-		
-		mv.setViewName("doctor-search-form");
-		
-		return mv;
-	}
-	
-	@RequestMapping(value="/doctor-save-form/{id}", method=RequestMethod.GET)
-	public ModelAndView save_form(@PathVariable("id") String id){
-		ModelAndView mv=new ModelAndView();
-		
-		Doctor o;
-		
-		if(id.equals("add")){
-			o=new Doctor();
-		}
-		else{
-			o=service.get(id);
-		}
-		
-		List<Speciality> speciality=service_speciality.search(new Speciality());
-		
-		mv.addObject("o", o);
-		mv.addObject("speciality", speciality);
-		
-		mv.setViewName("doctor-save-form");
-		
-		return mv;
-	}
-	
-	@RequestMapping(value="/doctor-schedule-form/{id}", method=RequestMethod.GET)
-	public String schedule_form(@PathVariable("id") String id){
-		
-		Doctor o=service.getByLicense(id);
-		
-		Map<Integer, Day> day=o.getDay();
-		
-		Set set=day.keySet();
-		
-		Iterator iterator=set.iterator();
-		
-		Map<Integer, List> map=new LinkedHashMap();
-		
-		while(iterator.hasNext()){
-			int key=(Integer)iterator.next();
-			
-			List<String> list=map.get(day.get(key).getDay());
-			
-			if(list==null){
-				list=new ArrayList();
-			}
-			
-			list.add(day.get(key).getBegin_time());
-			
-			map.put(day.get(key).getDay(), list);
-		}
-		
-		
-		return null;
-	}
+
 	
 	@RequestMapping(value="/doctor-search", method=RequestMethod.POST)
-	public @ResponseBody Object search(HttpServletRequest request) {
-		try{
-			Doctor o=new Doctor();
-			o.setLicense_no(request.getParameter("license_no"));
-			o.setName(request.getParameter("name"));
-			if(request.getParameter("spc_id")!=null){
-				o.setSpeciality(service_speciality.get(request.getParameter("spc_id")));
-			}
-			return service.search(o);
-		}catch(Exception e){
-			return e.getMessage()+"error";
-		}
+	@CrossOrigin(origins="http://localhost:3000")
+	public Map<String, String> search(HttpServletRequest request) {
+		List list=new ArrayList<String>();
+		Map<String, String>map=new HashMap<String,String>();
+		Doctor o=service.get(request.getParameter("doc_id2").toString());
+		map.put("name", o.getName());
+		map.put("license", o.getLicense_no());
+		map.put("email", o.getEmail());
+		map.put("spe", o.getSpeciality().getName());
+		return map;
 		
 	}
 	
@@ -192,17 +114,6 @@ public class DoctorController {
 		
 	}
 	
-	@RequestMapping(value="/doctor-delete/{id}", method=RequestMethod.GET)
-	public @ResponseBody String delete(@PathVariable("id") String id) {
-		try{
-			service.delete(id);
-			return "1";
-		}
-		catch(Exception e){
-			
-			return e.getMessage();
-		}
-	}
 	
 	@RequestMapping(value="/doctor-schedule-save/{id}", method=RequestMethod.POST)
 	@CrossOrigin(origins="http://localhost:3000")
@@ -264,6 +175,13 @@ public class DoctorController {
 		
 	}
 	
+	@RequestMapping(value="/doctor-delete", method=RequestMethod.POST)
+	@CrossOrigin(origins="http://localhost:3000")
+	public String delete(HttpServletRequest request){
+		String s=service.delete(request.getParameter("id"));
+		return s;
+	}
+	
 	@RequestMapping(value="/doctor-update", method=RequestMethod.POST)
 	@CrossOrigin(origins="http://localhost:3000")
 	public String update(HttpServletRequest request){
@@ -282,6 +200,14 @@ public class DoctorController {
 	public List<Map<String, String>> viewApp(HttpServletRequest request) {
 		List mlist=new ArrayList<Map<String, String>>();
 		mlist=service_appointment.getByDoctor((request.getParameter("doc_id").toString()));
+			return mlist;	
+	}
+	
+	@RequestMapping(value="/doctor-view-schedule", method=RequestMethod.POST)
+	@CrossOrigin(origins="http://localhost:3000")
+	public List<Map<String, String>> viewSchedule(HttpServletRequest request) {
+		List mlist=new ArrayList<Map<String, String>>();
+		mlist=service.getSchedule(request.getParameter("doc_id").toString());
 			return mlist;	
 	}
 }

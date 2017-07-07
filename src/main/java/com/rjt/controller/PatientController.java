@@ -53,19 +53,13 @@ public class PatientController {
         binder.registerCustomEditor(Date.class, new CustomDateEditor(format, false));
     }
 	
-	@RequestMapping(value="/patient", method=RequestMethod.GET)
-	public ModelAndView patient(){
-		ModelAndView mv=new ModelAndView();
-		mv.setViewName("patient");
-		
-		return mv;
-	}
 	
 	@RequestMapping(value="/patient-login", method=RequestMethod.POST)
 	@CrossOrigin(origins="http://localhost:3000")
 	public String login(HttpServletRequest request){
 		Patient p=service.getByEmail(request.getParameter("email"));
 		if(p!=null){
+			p.setPassword(request.getParameter("pwd"));
 			Patient o=service.login(p);
 			if(o!=null){
 				return o.getId().toString();
@@ -87,68 +81,6 @@ public class PatientController {
 		}
 	}
 	
-	
-	@RequestMapping(value="/patient-search-form", method=RequestMethod.GET)
-	public ModelAndView search_form(){
-		ModelAndView mv=new ModelAndView();
-		
-		mv.addObject("o", new Patient());
-		
-		mv.setViewName("patient-search-form");
-		
-		return mv;
-	}
-	
-	@RequestMapping(value="/patient-save-form/{id}", method=RequestMethod.GET)
-	public ModelAndView save_form(@PathVariable("id") String id){
-		ModelAndView mv=new ModelAndView();
-		
-		Patient o;
-		
-		if(id.equals("add")){
-			o=new Patient();
-			o.setGender('m');
-		}
-		else{
-			o=service.get(id);
-		}
-		
-		mv.addObject("o", o);
-		
-		mv.setViewName("patient-save-form");
-		
-		return mv;
-	}
-	
-	
-	
-	/*@RequestMapping(value="/doctor-schedule-form/{id}", method=RequestMethod.GET)
-	public ModelAndView schedule_form(@PathVariable("id") String id){
-		ModelAndView mv=new ModelAndView();
-		
-		Doctor o=service.get(id);
-		
-		Map<Integer, Day> day=o.getDay();
-		
-		Set set=day.keySet();
-		
-		Iterator iterator=set.iterator();
-		
-		Map<Integer, String> map=new LinkedHashMap();
-		
-		while(iterator.hasNext()){
-			int key=(Integer)iterator.next();
-			
-			map.put(day.get(key).getDay(), DateTime.getTimeString(day.get(key).getBegin_time()));
-		}
-		
-		mv.addObject("o", o);
-		mv.addObject("map", map);
-		
-		mv.setViewName("doctor-schedule-form");
-		
-		return mv;
-	}*/
 	
 	/*@RequestMapping(value="/patient-search", method=RequestMethod.POST)
 	//@CrossOrigin(origins="http://localhost:4200")
@@ -186,16 +118,6 @@ public class PatientController {
 			
 	}
 	
-	/*@RequestMapping(value="/doctor-schedule-save/{id}", method=RequestMethod.POST)
-	public @ResponseBody String schedule_save(@PathVariable("id") String id, HttpServletRequest request){
-		ModelAndView mv=new ModelAndView();
-		String[] schedule=request.getParameterValues("schedule");
-		
-		service.schedule(id, schedule);
-		
-		return null;
-	}*/
-	
 	@RequestMapping(value="/patient-save", method=RequestMethod.POST)
 	@CrossOrigin(origins="http://localhost:3000")
 	public String save(HttpServletRequest request) {
@@ -222,32 +144,5 @@ public class PatientController {
 				return "1";	
 	}
 	
-	@RequestMapping(value="/displaytable", method=RequestMethod.GET)
-	public ModelAndView displaytable(){
-		ModelAndView mv=new ModelAndView();
-		
-		Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -5);
-        cal.setTime(cal.getTime());
-        Date nowmin5 = cal.getTime();
-		
-        Doctor doctor=doc_svc.get("146");
-		
-        List<Patient> list=(List<Patient>)service.displaytable(nowmin5, doctor);
-        
-		/*Appointment a=(Appointment)service.displaytable(nowmin5, doctor);
-		
-		//for(Appointment a:list){
-			System.out.println("doctor: " + a.getDoctor().getId());
-			System.out.println("patient: " + a.getPatient().getName());
-			System.out.println("date: " + a.getDt());
-			System.out.println("------------------------------------------------");
-		//}*/
-		
-		mv.addObject("list", list);
-		
-		mv.setViewName("displaytable");
-		
-		return mv;
-	}
+	
 }

@@ -32,6 +32,10 @@ import com.rjt.util.DateTransformer;
 public class AppointmentDaoImpl implements AppointmentDao{
 	@Autowired
 	SessionFactory session;
+	
+	@Autowired
+	SpecialityDao service_peciality;
+	
 	@Transactional
 	public Appointment saveOrUpdate(Appointment o) {
 		// TODO Auto-generated method stub
@@ -181,7 +185,10 @@ public class AppointmentDaoImpl implements AppointmentDao{
 	@Transactional
 	public Object browse(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		String spe_id=request.getParameter("spe_id");
+		//String spe_id=request.getParameter("spe_id");
+		String spec=request.getParameter("spec");
+		Speciality sepcobject=service_peciality.getSpecialityByName(spec);
+		Integer spe_id=sepcobject.getId();
 		String dt=request.getParameter("dt");
 		String day;
 		

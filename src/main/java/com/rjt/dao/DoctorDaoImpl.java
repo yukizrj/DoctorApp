@@ -1,5 +1,7 @@
 package com.rjt.dao;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rjt.model.Appointment;
 import com.rjt.model.Day;
 import com.rjt.model.Doctor;
+import com.rjt.model.DoctorDay;
 import com.rjt.model.Speciality;
 import com.rjt.util.DateTransformer;
 
@@ -46,11 +50,7 @@ public class DoctorDaoImpl implements DoctorDao{
 		// TODO Auto-generated method stub
 		session.getCurrentSession().saveOrUpdate(o);
 	}
-	@Transactional
-	public void delete(String id) {
-		Doctor d=get(id);
-		session.getCurrentSession().delete(d);
-	}
+	
 	@Transactional
 	public List search(Doctor o) {
 		// TODO Auto-generated method stub
@@ -87,8 +87,13 @@ public class DoctorDaoImpl implements DoctorDao{
 	public Doctor getByLicense(String license) {
 		Query query=session.getCurrentSession().createQuery("FROM Doctor WHERE license_no= '"+license+"'");
 		List<Doctor> d=query.list();
-		Doctor o=d.get(0);
-		return o;
+		if(d.size()==0){
+			return null;
+		}
+		else{
+			Doctor o=d.get(0);
+			return o;
+		}
 	}
 	
 	@Transactional
@@ -106,6 +111,12 @@ public class DoctorDaoImpl implements DoctorDao{
 	}
 	
 	@Transactional
+	public void deleteapp(Doctor o){
+		Query query=session.getCurrentSession().createQuery("DELETE FROM Appointment WHERE doc_id=" + o.getId());
+		int result= query.executeUpdate();
+	}
+	
+	@Transactional
 	public void deleteday(Map<Integer, Day> day){
 		Set set=day.keySet();
 		
@@ -118,6 +129,22 @@ public class DoctorDaoImpl implements DoctorDao{
 			int result2 = query2.executeUpdate();
 			
 			System.out.println("result2"+result2);
+		}
+	}
+	
+	@Transactional
+	public String delete(String id) {
+		try{
+		Doctor d=get(id);
+		doctordaytbl(d);
+		deleteapp(d);
+		Map<Integer, Day> day=d.getDay();
+		deleteday(day);
+		session.getCurrentSession().delete(d);
+		return "1";
+		}
+		catch(Exception e){
+			return "0";
 		}
 	}
 	
@@ -160,5 +187,31 @@ public class DoctorDaoImpl implements DoctorDao{
 		
 		session.getCurrentSession().saveOrUpdate(o);
 		return o.getDay();
+	}
+	
+	@Transactional
+	public Day getDay(Integer id){
+		return session.getCurrentSession().get(Day.class, id);
+	}
+	
+	@Transactional
+	public List getSchedule(String doc_id) {
+		Integer docid=Integer.parseInt(doc_id);
+		Query query=session.getCurrentSession().createQuery("FROM DoctorDay WHERE doc_id="+docid);
+		List<DoctorDay> list=query.list();
+		List<Map<String,String>> mlist=new ArrayList<Map<String, String>>();
+		for(DoctorDay o:list){
+				Map<String, String>mm=new HashMap<String, String>();
+				Day day=getDay(o.getDay_id());
+				mm.put("weekday", day.getDay().toString());
+				mm.put("begin", day.getBegin_time());
+				mm.put("end", day.getEnd_time());
+				
+				mlist.add(mm);
+			
+			
+		}
+
+		return mlist;
 	}
 }

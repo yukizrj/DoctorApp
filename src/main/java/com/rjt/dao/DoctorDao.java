@@ -9,10 +9,11 @@ import com.rjt.model.Doctor;
 public interface DoctorDao {
 	public Doctor login(Doctor o);
 	public void saveOrUpdate(Doctor o);
-	public void delete(String id);
+	public String delete(String id);
 	public List search(Doctor o);
 	public List searchByName(Doctor o);
 	public Doctor get(String id);
 	public Map<Integer, Day> schedule(String id, String schedule);
 	public Doctor getByLicense(String license);
+	public List getSchedule(String doc_id);
 }
