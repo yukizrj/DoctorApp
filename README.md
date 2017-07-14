@@ -1,3 +1,9 @@
 # DoctorApp
-DoctorApp-BackEnd
-Used Spring boot & Hibernate with Oracle database
+DoctorApp-BackEnd Sopport with DoctorApp-FrontEnd
+
+## Use Technique
+*Spring boot
+*Hibernate
+*Maven
+*Tomcat
+*JDBC
